@@ -4,9 +4,8 @@ obj = $(src:.c=.o)
 LDFLAGS = -lz -lm
 
 phase1: $(obj)
-        $(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -pthread -o $@ $^ $(LDFLAGS)
 
 .PHONY: clean
 clean:
-        rm -f $(obj) phase1
-
+	rm -f $(obj) phase1
