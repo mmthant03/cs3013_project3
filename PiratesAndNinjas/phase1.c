@@ -15,7 +15,14 @@ int bluec;
 int redc;
 int turnsRemainingBlue;
 int turnsRemainingRed;
-int waitingMembers;
+int waitingBlues;
+int waitingReds;
+sem_t threeBluesMax;
+sem_t threeRedsMax;
+
+
+
+
 
 void* thread(void* arg) 
 { 
@@ -27,27 +34,31 @@ void* thread(void* arg)
 	
 	//if Ninja
 	if (input == "N") {//if blue
+	
+		//try to be one of the three blues that exist
+		sem_wait(&threeBluesMax);
+	
+	
 		//check if the 3 blue turns are taken
 		//if so, sleep until a red wakes you up specifically
-		if (turnsRemainingBlue == 0) {
-			waitingMembers++;
+		if (turnsRemainingBlue <= 0) {
+			waitingBlues++;
 			sem_wait(&bluesTurn);
 		}
 		
 		//wait for our mutual exclusion
+		printf("blue TRYINg to enter\n");
 		sem_wait(&mutex_blue);
-		printf("blue lock acquired = blue 1\n");
+			printf("blue lock acquired = blue 1\n");
 
-		bluec++;
-		if (bluec == 1) {
-			sem_wait(&mutex_red); //lock out all reds
-			printf("red lock acquired = blue 1\n");
-		}
-		turnsRemainingBlue--;
+			bluec++;
+			turnsRemainingBlue--;
+			if (bluec == 1) {
+				sem_wait(&mutex_red); //lock out all reds
+				printf("red lock acquired = blue 1\n");
+			}
 		sem_post(&mutex_blue);
 		printf("blue lock released\n");
-		
-		
 		
 		
 		
@@ -58,66 +69,131 @@ void* thread(void* arg)
 		
 		//leave
 		sem_wait(&mutex_blue);
-		printf("blue lock acquired = blue 2\n");
-		bluec--;
-		if (bluec == 0) {
-			turnsRemainingRed = 3; //set the next group of turns to 3
-			while (waitingMembers > 0) { //wake up 
-				printf("trying to wake up a red\n");
-				sem_post(&redsTurn);
-				waitingMembers--;
+			printf("blue lock acquired = blue 2\n");
+			bluec--;
+			if (bluec == 0) {
+				//THIS SECTION HANDLES THE NEXT TURN; 
+				//IF there is a red waiting, let red go
+				//if there is no red let blue go
+				if (waitingReds > 0) {	
+					turnsRemainingRed = 3; //set the next group of turns to 3
+					for (int i = 0; i < 3; i++) {
+						if (waitingReds > 0) {
+							printf("trying to wake up a red\n");
+							sem_post(&redsTurn);
+							waitingReds--;
+						}
+					}
+				}
+				else {
+					turnsRemainingBlue = 3; //set the next group of turns to 3
+					for (int i = 0; i < 3; i++) {
+						if (waitingBlues > 0) {
+							printf("trying to wake up a blue\n");
+							sem_post(&bluesTurn);
+							waitingBlues--;
+						}
+					}
+				}
 				
+				
+				
+				
+				turnsRemainingRed = 3; //set the next group of turns to 3
+				for (int i = 0; i < 3; i++) {
+					if (waitingReds > 0) {
+						printf("trying to wake up a red\n");
+						sem_post(&redsTurn);
+						waitingReds--;
+					}
+				}
+				sem_post(&mutex_red);
+				printf("red lock released\n");
 			}
-			sem_post(&mutex_red);
-			printf("red lock released\n");
-		}
 		sem_post(&mutex_blue);
 		printf("blue lock released\n");
+		
+		
+		sem_post(&threeBluesMax);
+		
+		
 	}
 	
 	
 	//if Pirate
 	else if (input == "P") { //if red
+		sleep(0.5);
+		sem_wait(&threeRedsMax);
+	
 		//check if the 3 blue turns are taken
 		//if so, sleep until a red wakes you up specifically
-		if (turnsRemainingRed == 0) {
-			waitingMembers++;
+		if (turnsRemainingRed <= 0) {
+			waitingReds++;
 			sem_wait(&redsTurn);
 		}
 		
 		
+		printf("red TRYINg to enter\n");
 		sem_wait(&mutex_red);
-		printf("red lock acquired = red 1\n");
+			printf("red lock acquired = red 1\n");
 
-		redc++;
-		turnsRemainingRed--;
-		if (redc == 1) {
-			sem_wait(&mutex_blue);
-			printf("blue lock acquired = red 1\n");
-		}
+			redc++;
+			turnsRemainingRed--;
+			if (redc == 1) { //if this is first red
+				sem_wait(&mutex_blue);
+				printf("blue lock acquired = red 1\n");
+			}
 		sem_post(&mutex_red);
 		printf("red lock released\n");
+		
+		
 		
 		//critical section
 		printf("WE ENTER RED\n");
 		sleep(1);
 		printf("WE STOP RED\n");
 		
+		
+		
+		
 		sem_wait(&mutex_red);
-		printf("red lock acquired = red 2\n");
-		redc--;
-		if (redc == 0) {
-			turnsRemainingBlue = 3; //set the next group of turns to 3
-			while (waitingMembers > 0) { //wake up 
-				printf("trying to wake up a blue\n");
-				sem_post(&bluesTurn);
-				waitingMembers--;
+			printf("red lock acquired = red 2\n");
+			redc--;
+			if (redc == 0) { //last red is out
+			
+				//THIS SECTION HANDLES THE NEXT TURN; 
+				//IF there is a blue waiting, let red go
+				//if there is no blues waiting, let red go
+				if (waitingReds > 0) {
+					turnsRemainingBlue = 3; //set the next group of turns to 3
+					for (int i = 0; i < 3; i++) {
+						if (waitingBlues > 0) {
+							printf("trying to wake up a blue\n");
+							sem_post(&bluesTurn);
+							waitingBlues--;
+						}
+					}
+				}
+				else {
+					turnsRemainingRed = 3; //set the next group of turns to 3
+					for (int i = 0; i < 3; i++) {
+						if (waitingReds > 0) {
+							printf("trying to wake up a red \n");
+							sem_post(&redsTurn);
+							waitingReds--;
+						}
+					}
+				}
+				
+				
+				
+				sem_post(&mutex_blue);
+				printf("blue lock released\n");
 			}
-			sem_post(&mutex_blue);
-			printf("blue lock released\n");
-		}
 		sem_post(&mutex_red);
 		printf("red lock released\n");
+		
+		sem_post(&threeRedsMax);
 		
 	}
 	
@@ -140,11 +216,14 @@ int main(int argc, char* argv[]) {
 	sem_init(&mutex_red, 0, 1);
 	sem_init(&wrt, 0, 1);
 	sem_init(&bluesTurn, 0, 0);
+	sem_init(&threeBluesMax, 0, 3);
+	sem_init(&threeRedsMax, 0, 3);
 	bluec = 0;
 	redc = 0;
 	turnsRemainingRed = 3;
 	turnsRemainingBlue = 3;
-	waitingMembers = 0;
+	waitingBlues= 0;
+	waitingReds = 0;
 	
 	
 	//start up some threads
@@ -152,9 +231,9 @@ int main(int argc, char* argv[]) {
     pthread_create(&t1,NULL,thread, "N"); 
     pthread_create(&t2,NULL,thread, "N"); 
     pthread_create(&t3,NULL,thread, "N"); 
-    pthread_create(&t4,NULL,thread,"P"); 
-    pthread_create(&t5,NULL,thread,"P"); 
-    pthread_create(&t8,NULL,thread,"P"); 
+    pthread_create(&t4,NULL,thread,"N"); 
+    pthread_create(&t5,NULL,thread,"N"); 
+    pthread_create(&t8,NULL,thread,"N"); 
     pthread_create(&t9,NULL,thread,"P"); 
     pthread_create(&t6,NULL,thread,"N"); 
     pthread_create(&t7,NULL,thread,"N"); 
@@ -171,6 +250,10 @@ int main(int argc, char* argv[]) {
     sem_destroy(&bluesTurn);
     sem_destroy(&numBluesFree); 
     return 0; 
+
+
 	
+
+
 	
 }
