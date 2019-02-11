@@ -4,6 +4,25 @@
 #include <semaphore.h>
 #include <unistd.h>
 
+typedef struct visitData {
+	int charID; //1, 2 just to uniquely identify each ninja or pirate
+	char typeChar; //"N" for ninja, "P" for pirate
+	clock_t startTimeWait;
+	clock_t endTimeWait;
+	clock_t startTimeCostum;
+	clock_t endTimeCostume;
+	//this will hold the number of visits
+	//do note that if this is >1, the second visit will be recorded in a separate visitData with the matching charID
+	//where the first will retain visitNum = 1;
+	int visitNum;
+} visitData;
+
+typedef struct threadArguments {
+	int charID;
+	char* typeChar;
+	int visitNum;
+} threadArguments;
+
 sem_t bluesTurn;
 sem_t redsTurn;
 sem_t numRedsFree;
@@ -19,26 +38,45 @@ int waitingBlues;
 int waitingReds;
 sem_t threeBluesMax;
 sem_t threeRedsMax;
+visitData* ourVisitData;
 
 
 
 
 
-void* thread(void* arg) 
+/*for either ninja or pirate, the structure goes as follows:
+	- try to be one of the first three ninjas or pirates in the ready state (3 ninjas and 3 pirates can hold threeBluesMax and threeRedsMax)
+	- if they are one of the 3 at the front of the line, they try to enter the shop
+		- they cannot enter the shop if the other team is in the shop (holds their team's lock)
+	- if they get into the shop, they get their costume built
+	- when the last member exits and the shop will be empty, each team checks if the other team is waiting, if so it gives the thread to the other team and lets three go
+*/
+void* thread (void* arg)
 { 
-	char* input = (char*) arg;
-
-
+	//acquire all our variables
+	threadArguments thisArg = *((threadArguments*) arg);
+	int charID = thisArg.charID;
+	char* typeChar = thisArg.typeChar;
+	int visitNum = thisArg.visitNum;
+	//we passed in all our fields
+	//TODO @MYO
+	//typeChar is just N or P, we use that already
+	//charID is what they'll be stored into our visitData struct as, that's why we have it
+	//visitNum is always 1 to start
+	//visitNum will be visitNum++ when the 25% chance to re-visit goes again
+	//at which point, you call thread again
+	
+	
+	
 	
 	
 	
 	//if Ninja
-	if (input == "N") {//if blue
-	
+	if (typeChar == "N") {//if blue
+
 		//try to be one of the three blues that exist
 		sem_wait(&threeBluesMax);
-	
-	
+		
 		//check if the 3 blue turns are taken
 		//if so, sleep until a red wakes you up specifically
 		if (turnsRemainingBlue <= 0) {
@@ -46,11 +84,10 @@ void* thread(void* arg)
 			sem_wait(&bluesTurn);
 		}
 		
-		//wait for our mutual exclusion
+		//enter
 		printf("blue TRYINg to enter\n");
 		sem_wait(&mutex_blue);
 			printf("blue lock acquired = blue 1\n");
-
 			bluec++;
 			turnsRemainingBlue--;
 			if (bluec == 1) {
@@ -60,18 +97,16 @@ void* thread(void* arg)
 		sem_post(&mutex_blue);
 		printf("blue lock released\n");
 		
-		
-		
-		//critical section
+		//create the costume
 		printf("WE ENTER BLUE\n");
 		sleep(1);
 		printf("WE EXIT-BLUE\n");
 		
-		//leave
+		//LEAVE
 		sem_wait(&mutex_blue);
 			printf("blue lock acquired = blue 2\n");
 			bluec--;
-			if (bluec == 0) {
+			if (bluec == 0) {//if the last blue is exiting
 				//THIS SECTION HANDLES THE NEXT TURN; 
 				//IF there is a red waiting, let red go
 				//if there is no red let blue go
@@ -95,18 +130,6 @@ void* thread(void* arg)
 						}
 					}
 				}
-				
-				
-				
-				
-				turnsRemainingRed = 3; //set the next group of turns to 3
-				for (int i = 0; i < 3; i++) {
-					if (waitingReds > 0) {
-						printf("trying to wake up a red\n");
-						sem_post(&redsTurn);
-						waitingReds--;
-					}
-				}
 				sem_post(&mutex_red);
 				printf("red lock released\n");
 			}
@@ -121,46 +144,41 @@ void* thread(void* arg)
 	
 	
 	//if Pirate
-	else if (input == "P") { //if red
-		sleep(0.5);
+	else if (typeChar == "P") { //if red
+	
+		//try to be one of the only 3 reds
 		sem_wait(&threeRedsMax);
 	
 		//check if the 3 blue turns are taken
-		//if so, sleep until a red wakes you up specifically
+		//if so, sleep until a red turn goes again
 		if (turnsRemainingRed <= 0) {
 			waitingReds++;
 			sem_wait(&redsTurn);
 		}
 		
-		
+		//enter
 		printf("red TRYINg to enter\n");
 		sem_wait(&mutex_red);
 			printf("red lock acquired = red 1\n");
-
 			redc++;
 			turnsRemainingRed--;
-			if (redc == 1) { //if this is first red
+			if (redc == 1) { //lock out all blues
 				sem_wait(&mutex_blue);
 				printf("blue lock acquired = red 1\n");
 			}
 		sem_post(&mutex_red);
 		printf("red lock released\n");
 		
-		
-		
-		//critical section
+		//costume time
 		printf("WE ENTER RED\n");
 		sleep(1);
 		printf("WE STOP RED\n");
 		
-		
-		
-		
+		//LEAVE
 		sem_wait(&mutex_red);
 			printf("red lock acquired = red 2\n");
 			redc--;
-			if (redc == 0) { //last red is out
-			
+			if (redc == 0) { //if the last red is out
 				//THIS SECTION HANDLES THE NEXT TURN; 
 				//IF there is a blue waiting, let red go
 				//if there is no blues waiting, let red go
@@ -184,9 +202,6 @@ void* thread(void* arg)
 						}
 					}
 				}
-				
-				
-				
 				sem_post(&mutex_blue);
 				printf("blue lock released\n");
 			}
@@ -194,7 +209,7 @@ void* thread(void* arg)
 		printf("red lock released\n");
 		
 		sem_post(&threeRedsMax);
-		
+
 	}
 	
 	
@@ -224,27 +239,29 @@ int main(int argc, char* argv[]) {
 	turnsRemainingBlue = 3;
 	waitingBlues= 0;
 	waitingReds = 0;
+	ourVisitData = (visitData*)malloc(100*sizeof(visitData));
 	
 	
+	//TODO @myo put thread creation into a loop please, with random times
 	//start up some threads
+	
     pthread_t t1,t2, t3, t4, t5, t6, t7, t8, t9; 
-    pthread_create(&t1,NULL,thread, "N"); 
-    pthread_create(&t2,NULL,thread, "N"); 
-    pthread_create(&t3,NULL,thread, "N"); 
-    pthread_create(&t4,NULL,thread,"N"); 
-    pthread_create(&t5,NULL,thread,"N"); 
-    pthread_create(&t8,NULL,thread,"N"); 
-    pthread_create(&t9,NULL,thread,"P"); 
-    pthread_create(&t6,NULL,thread,"N"); 
-    pthread_create(&t7,NULL,thread,"N"); 
+	//void* thread (int charID, char typeChar, int visitNum)
+	threadArguments* arg = (threadArguments*)malloc(sizeof(threadArguments));
+	arg ->charID = 1;
+	arg ->typeChar = "P";
+	arg -> visitNum = 1;
+    pthread_create(&t1,NULL,thread, arg); 
+	
+	threadArguments* arg2 = (threadArguments*)malloc(sizeof(threadArguments));
+	arg2 ->charID = 1;
+	arg2 ->typeChar = "N";
+	arg2 -> visitNum = 1;
+    pthread_create(&t2,NULL,thread, arg2); 
+	
     sleep(4); 
     pthread_join(t1,NULL); 
     pthread_join(t2,NULL); 
-    pthread_join(t3,NULL); 
-    pthread_join(t4,NULL); 
-    pthread_join(t5,NULL); 
-    pthread_join(t6,NULL); 
-    pthread_join(t7,NULL); 
     sem_destroy(&numRedsFree);
     sem_destroy(&redsTurn);
     sem_destroy(&bluesTurn);
