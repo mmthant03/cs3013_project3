@@ -1,0 +1,24 @@
+Before you begin coding, answer the follow ques-tions in your problem2_explanation.txt text file:
+(note that we use locks, not semaphores for this solution)
+
+
+Phase  1:Assume  that  the Minnesotan drivers follow the convention that whoever ar-rives at the intersection first proceeds first. Using the language of synchronization primitives, describe the way this intersection is controlled. In what ways is this method suboptimal?
+
+
+Using the first in first out method for this intersection will go as follows
+-The first driver to arrive at the intersection will acquire a global lock that allows them to enter the intersection
+-Nobody else can enter the intersection while they have the lock, because if somebody tries to acquire the lock they will fall asleep
+This method is suboptimal because if drivers can drive in non-conflicting quadrants, they should be able to use the intersection using parallelism, however this solution cannot allow more than one driver at once
+
+
+
+
+
+Phase 2:The governor allows the Mas-sachusetts drivers to return and sends the Min-nesotans back home. Assume these drivers donot follow the convention described above. Inparticular, Massachusetts drivers are happy toenter an intersection, even if only the frontbumper of their car will fit. In what instancescan this mindset produce a deadlock? (It willbe helpful to think of this in terms of the model we are using instead of trying to visualize an actualintersection). How can such a deadlock be prevented?
+
+
+The easiest example is when four drivers arrive at the same time and try to make a left turn
+They will all enter the quadrants, then try to move forward but they will be unable to move
+Deadlock can be avoided here by using locks
+If you allow every car to "map" where they are traveling as a critical section, and not allow any other car to enter a quadrant that is mapped, deadlock will be avoided as a whole
+
