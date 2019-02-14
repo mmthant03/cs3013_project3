@@ -15,61 +15,61 @@ typedef struct threadArguments {
 pthread_t tid[2]; 
 int counter; 
 pthread_mutex_t lock; 
-int NW=0;
-int SW=0;
-int NE=0;
-int SE=0;
+int NW;
+int SW;
+int NE;
+int SE;
   
 void handleWhiteboardRelease(int start, int end) {
 	//note this function is only called within a locked section so this will always be concurrent
 	
 	if (start == 6 && end == 3) {
-		SE == 0;
+		SE = 0;
 	}
 	else if (start == 6 && end == 12) {
-		SE == 0;
-		NE == 0;
+		SE =0;
+		NE = 0;
 	}
 	else if (start == 6 && end == 9) {
-		SE == 0;
-		NE == 0;
-		NW == 0;
+		SE = 0;
+		NE = 0;
+		NW = 0;
 	}
 	else if (start == 3 && end == 9) {
-		NE == 0;
-		NW == 0;
+		NE = 0;
+		NW = 0;
 	}
 	else if (start == 3 && end == 12) {
-		NE == 0;
+		NE = 0;
 	}
 	else if (start == 3 && end == 6) {
-		NE == 0;
-		NW == 0;
-		SW == 0;
+		NE = 0;
+		NW = 0;
+		SW = 0;
 	}
 	else if (start == 12 && end == 9) {
-		NW == 0;
+		NW = 0;
 	}
 	else if (start == 12 && end == 6) {
-		NW == 0;
-		SW == 0;
+		NW = 0;
+		SW = 0;
 	}
 	else if (start == 12 && end == 3) {
-		NW == 0;
-		SW == 0;
-		SE == 0;
+		NW = 0;
+		SW = 0;
+		SE =0;
 	}
 	else if (start == 9 && end == 3) {
-		SE == 0;
-		SW == 0;
+		SE =0;
+		SW =0;
 	}
 	else if (start == 9 && end == 12) {
-		SE == 0;
-		SW == 0;
-		NE == 0;
+		SE = 0;
+		SW = 0;
+		NE = 0;
 	}
 	else if (start == 9 && end == 6) {
-		SW == 0;
+		SW = 0;
 	}
 	
 	
@@ -177,7 +177,7 @@ void* thread(void *arg)
 	//down is 6
 	int threadNum = 0;
 	int start = 6;
-	int end = 3;
+	int end = 9;
 	
 	pthread_mutex_lock(&lock); 
 	counter += 1; //just to keep track of threads, nothing more
@@ -201,13 +201,16 @@ void* thread(void *arg)
 	{
 		//try to claim whiteboard squares
 		pthread_mutex_lock(&lock); 
-		//printf("inside thread %d s1\n", threadNum);
+		printf("inside thread %d s1 at %d %d \n", threadNum, start, end);
 		
 		//try to claim our square
 		locksAcquired = handleWhiteboard(start, end);
-
+		if (locksAcquired == 1) {
+			printf("THREAD %d ACQUIRED GRID\n", threadNum);
+		}
+		pthread_mutex_unlock(&lock);
 		
-		pthread_mutex_unlock(&lock); 
+		sleep(1);
 	}
 	
 	//run the intersection
@@ -244,6 +247,11 @@ int main(int argc, char* argv[]) {
 	arg2 -> visitNum = 1;
     //pthread_create(&t2,NULL,thread, arg2); 
 	*/
+	NE = 0;
+	NW = 0;
+	SE = 0;
+	SW = 0;
+	
 	//copy
 	int i = 0; 
     int error; 
@@ -252,7 +260,7 @@ int main(int argc, char* argv[]) {
         printf("\n mutex init has failed\n"); 
         return 1; 
     } 
-  
+ 
 
 	pthread_create(&(tid[1]), NULL, &thread, NULL);
 	pthread_create(&(tid[2]), NULL, &thread, NULL);
