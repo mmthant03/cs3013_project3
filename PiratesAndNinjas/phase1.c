@@ -394,24 +394,33 @@ int isNULL()
 
 void joinThread(pthread_t *pt)
 {
-	for (int i = 1; i < 100; i++)
+	for (int i = 1; i < 25; i++)
 	{
 		if (threadList[0] == 0)
 		{
 			joinThread(pt);
 		}
-		else if (isNULL() == 1)
+		else if (i == 24)
 		{
-			if (threadList[i] != 0)
-			{
-				pthread_join(pt[threadList[i]], NULL);
-				printf("Thread %d is joined\n", threadList[i]);
-			}
-			else
-			{
-				break;
-			}
+			printf("Threads joined \n");
+			break;
 		}
+		else
+		{
+			pthread_join(pt[i], NULL);
+		}
+		// else if (isNULL() == 1)
+		// {
+		// 	if (threadList[i] != 0)
+		// 	{
+		// 		pthread_join(pt[threadList[i]], NULL);
+		// 		printf("Thread %d is joined\n", threadList[i]);
+		// 	}
+		// 	else
+		// 	{
+		// 		break;
+		// 	}
+		// }
 	}
 }
 
@@ -459,7 +468,7 @@ int createThread(int numNinja, int numPirate, int threadNum, int visitNum, int p
 	}
 	arg->visitNum = visitNum;
 	pthread_create(&pt[threadNum], NULL, thread, arg);
-	
+
 	threadList[0] = 1;
 
 	for (int i = 1; i < 100; i++)
@@ -489,14 +498,14 @@ int createThread(int numNinja, int numPirate, int threadNum, int visitNum, int p
 		{
 			if (numNinja <= 0 && numPirate > 0)
 			{
-				pthread_join(pt[threadNum], NULL);
+				//pthread_join(pt[threadNum], NULL);
 				visitNum = 1;
 				threadNum = threadNum + 1;
 				return createThread(numNinja, numPirate, threadNum, visitNum, 0, pt);
 			}
 			else if (numPirate <= 0 && numNinja > 0)
 			{
-				pthread_join(pt[threadNum], NULL);
+				//pthread_join(pt[threadNum], NULL);
 				visitNum = 1;
 				threadNum = threadNum + 1;
 				return createThread(numNinja, numPirate, threadNum, visitNum, 1, pt);
@@ -563,12 +572,12 @@ int main(int argc, char *argv[])
 	int threadNum = 1;
 	int visitNum = 1;
 	int lastThread = createThread(numNinja, numPirate, threadNum, visitNum, -1, pt);
-	if (lastThread > 1)
-	{
-		joinThread(pt);
-	}
-	sleep(3);
+
+	sleep(9);
 	printStat();
+	sleep(5);
+	joinThread(pt);
+	//printStat();
 
 	/*
 	int totalthreads = numNinja + numPirate;
