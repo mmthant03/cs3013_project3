@@ -86,57 +86,67 @@ int popThread(int start)
 void handleWhiteboardRelease(int start, int end)
 {
 	//note this function is only called within a locked section so this will always be concurrent
-	
-	if (start == 6 && end == 3) {
-		SE == 0;
+
+	if (start == 6 && end == 3)
+	{
+		SE = 0;
 	}
-	else if (start == 6 && end == 12) {
-		SE == 0;
-		NE == 0;
+	else if (start == 6 && end == 12)
+	{
+		SE = 0;
+		NE = 0;
 	}
-	else if (start == 6 && end == 9) {
-		SE == 0;
-		NE == 0;
-		NW == 0;
+	else if (start == 6 && end == 9)
+	{
+		SE = 0;
+		NE = 0;
+		NW = 0;
 	}
-	else if (start == 3 && end == 9) {
-		NE == 0;
-		NW == 0;
+	else if (start == 3 && end == 9)
+	{
+		NE = 0;
+		NW = 0;
 	}
-	else if (start == 3 && end == 12) {
-		NE == 0;
+	else if (start == 3 && end == 12)
+	{
+		NE = 0;
 	}
-	else if (start == 3 && end == 6) {
-		NE == 0;
-		NW == 0;
-		SW == 0;
+	else if (start == 3 && end == 6)
+	{
+		NE = 0;
+		NW = 0;
+		SW = 0;
 	}
-	else if (start == 12 && end == 9) {
-		NW == 0;
+	else if (start == 12 && end == 9)
+	{
+		NW = 0;
 	}
-	else if (start == 12 && end == 6) {
-		NW == 0;
-		SW == 0;
+	else if (start == 12 && end == 6)
+	{
+		NW = 0;
+		SW = 0;
 	}
-	else if (start == 12 && end == 3) {
-		NW == 0;
-		SW == 0;
-		SE == 0;
+	else if (start == 12 && end == 3)
+	{
+		NW = 0;
+		SW = 0;
+		SE = 0;
 	}
-	else if (start == 9 && end == 3) {
-		SE == 0;
-		SW == 0;
+	else if (start == 9 && end == 3)
+	{
+		SE = 0;
+		SW = 0;
 	}
-	else if (start == 9 && end == 12) {
-		SE == 0;
-		SW == 0;
-		NE == 0;
+	else if (start == 9 && end == 12)
+	{
+		SE = 0;
+		SW = 0;
+		NE = 0;
 	}
-	else if (start == 9 && end == 6) {
-		SW == 0;
+	else if (start == 9 && end == 6)
+	{
+		SW = 0;
 	}
-	
-	
 }
 
 int handleWhiteboard(int start, int end)
@@ -151,85 +161,107 @@ int handleWhiteboard(int start, int end)
 			return 1;
 		}
 	}
-	else if (start == 6 && end == 12) {
-		if (SE == 0 && NE == 0) {
+	else if (start == 6 && end == 12)
+	{
+		if (SE == 0 && NE == 0)
+		{
 			SE = 1;
 			NE = 1;
 			return 1;
 		}
 	}
-	else if (start == 6 && end == 9) {
-		if (SE == 0 && NE == 0 && NW == 0) {
+	else if (start == 6 && end == 9)
+	{
+		if (SE == 0 && NE == 0 && NW == 0)
+		{
 			SE = 1;
 			NE = 1;
 			NW = 1;
 			return 1;
 		}
 	}
-	else if (start == 3 && end == 9) {
-		if (NE == 0 && NW == 0) {
+	else if (start == 3 && end == 9)
+	{
+		if (NE == 0 && NW == 0)
+		{
 			NE = 1;
 			NW = 1;
 			return 1;
 		}
 	}
-	else if (start == 3 && end == 12) {
-		if (NE == 0) {
+	else if (start == 3 && end == 12)
+	{
+		if (NE == 0)
+		{
 			NE = 1;
 			return 1;
 		}
 	}
-	else if (start == 3 && end == 6) {
-		if (NE == 0 && NW == 0 && SW == 0) {
+	else if (start == 3 && end == 6)
+	{
+		if (NE == 0 && NW == 0 && SW == 0)
+		{
 			NE = 1;
 			SW = 1;
 			NW = 1;
 			return 1;
 		}
 	}
-	else if (start == 12 && end == 9) {
-		if (NW == 0) {
+	else if (start == 12 && end == 9)
+	{
+		if (NW == 0)
+		{
 			NW = 1;
 			return 1;
 		}
 	}
-	else if (start == 12 && end == 6) {
-		if (NW == 0 && SW == 0) {
+	else if (start == 12 && end == 6)
+	{
+		if (NW == 0 && SW == 0)
+		{
 			NW = 1;
 			SW = 1;
 			return 1;
 		}
 	}
-	else if (start == 12 && end == 3) {
-		if (NW == 0 && SW == 0 && SE == 0) {
+	else if (start == 12 && end == 3)
+	{
+		if (NW == 0 && SW == 0 && SE == 0)
+		{
 			NW = 1;
 			SW = 1;
 			SE = 1;
 			return 1;
 		}
 	}
-	else if (start == 9 && end == 3) {
-		if (SE == 0 && SW == 0) {
+	else if (start == 9 && end == 3)
+	{
+		if (SE == 0 && SW == 0)
+		{
 			SE = 1;
 			SW = 1;
 			return 1;
 		}
 	}
-	else if (start == 9 && end == 12) {
-		if (SE == 0 && SW == 0 && NE == 0) {
+	else if (start == 9 && end == 12)
+	{
+		if (SE == 0 && SW == 0 && NE == 0)
+		{
 			SE = 1;
 			SW = 1;
 			NE = 1;
 			return 1;
 		}
 	}
-	else if (start == 9 && end == 6) {
-		if (SW == 0) {
+	else if (start == 9 && end == 6)
+	{
+		if (SW == 0)
+		{
 			SW = 1;
 			return 1;
 		}
 	}
-	
+
 	//a square was taken; fails whiteboard
 	sleep(0.1); //reduce the amount of spinning slightly, hopefully to improve performance
 	return 0;
@@ -239,38 +271,48 @@ void *thread(void *arg)
 {
 	//right is 3
 	//down is 6
+	threadArguments thread = *((threadArguments *)arg);
+
 	int threadNum = 0;
-	int start = 6;
-	int end = 3;
+	int start = thread.start;
+	int end = thread.end;
 
 	pthread_mutex_lock(&lock);
 	counter += 1;		 //just to keep track of threads, nothing more
 	threadNum = counter; //just in case some other thread updates counter
-	pthread_mutex_unlock(&lock); 
-	if (threadNum == 2) {
+	pthread_mutex_unlock(&lock);
+	if (threadNum == 2)
+	{
 		start = 12;
 		end = 9;
 	}
-	if (threadNum == 3) {
+	if (threadNum == 3)
+	{
 		start = 3;
 		end = 12;
 	}
-	if (threadNum == 4) {
+	if (threadNum == 4)
+	{
 		start = 9;
 		end = 6;
 	}
-	
+
 	int locksAcquired = 0;
 	while (locksAcquired == 0) //spin until we can go
 	{
 		//try to claim whiteboard squares
 		pthread_mutex_lock(&lock);
-		//printf("inside thread %d s1\n", threadNum);
+		printf("inside thread %d s1 at %d %d \n", threadNum, start, end);
 
 		//try to claim our square
 		locksAcquired = handleWhiteboard(start, end);
-
+		if (locksAcquired == 1)
+		{
+			printf("THREAD %d ACQUIRED GRID\n", threadNum);
+		}
 		pthread_mutex_unlock(&lock);
+
+		sleep(1);
 	}
 
 	//run the intersection
@@ -290,12 +332,14 @@ void *thread(void *arg)
 
 int main(int argc, char *argv[])
 {
+	srand(time(NULL));
 	threadInit();
 	for (int i = 0; i < 20; i++)
 	{
 		printf("Iteration : %d ; start : %d : end : %d \n", i, queues[i]->start, queues[i]->end);
 	}
-	pthread_t* pt = malloc(20*sizeof(pthread_t));
+	printf("You are here1");
+	pthread_t *pt = malloc(20 * sizeof(pthread_t));
 	/*
 	threadArguments* arg = (threadArguments*)malloc(sizeof(threadArguments));
 	arg ->charID = 1;
@@ -309,41 +353,143 @@ int main(int argc, char *argv[])
 	arg2 -> visitNum = 1;
     //pthread_create(&t2,NULL,thread, arg2); 
 	*/
+	NE = 0;
+	NW = 0;
+	SE = 0;
+	SW = 0;
+
 	//copy
-	
-	int i = 0;
+
+	//int i = 0;
 	int error;
+	printf("You are here2");
 	if (pthread_mutex_init(&lock, NULL) != 0)
 	{
 		printf("\n mutex init has failed\n");
 		return 1;
 	}
 
-	threadArguments* argN = (threadArguments*)malloc(sizeof(threadArguments));
-	int startN = 12;
-	int endN = popThread(startN);
-	argN->start = startN;
-	argN->end = endN;
-	pthread_create(&pt[0], NULL, &thread, argN);
+	// -1 means available
+	int N = -1;
+	int E = -1;
+	int S = -1;
+	int W = -1;
+	printf("You are here3");
 	
-	int turn = 0;
-	while(turn<21) {
-		
+
+	for(int i = 0; i < 20; i++) {
+		if(queues[i] != NULL) {
+			if(N == -1 && queues[i]->start == 12) {
+				threadArguments *argN = (threadArguments *)malloc(sizeof(threadArguments));
+				argN->start = queues[i]->start;
+				argN->end = queues[i]->end;
+				pthread_create(&pt[i], NULL, thread, argN);
+				N = i;
+				queues[i] = NULL;
+			} else if (N != -1) {
+				sleep(1);
+				pthread_join(pt[i], NULL);
+			}
+		} 
 	}
 
+	// for (int j = 0; j < 20; j++)
+	// {
+		// for (int i = 0; i < 21; i++)
+		// {
+		// 	if (queues[i] != NULL && i < 20)
+		// 	{
+		// 		if (N == -1 && queues[i]->start == 12)
+		// 		{
+		// 			threadArguments *argN = (threadArguments *)malloc(sizeof(threadArguments));
+		// 			argN->start = queues[i]->start;
+		// 			argN->end = queues[i]->end;
+		// 			pthread_create(&pt[i], NULL, thread, argN);
+		// 			N = i;
+		// 			queues[i] = NULL;
+		// 		}
+		// 		else if (N != -1)
+		// 		{
+		// 			pthread_join(pt[N], NULL);
+		// 			N = -1;
+		// 		}
 
+		// 		if (E == -1 && queues[i]->start == 3)
+		// 		{
+		// 			threadArguments *argE = (threadArguments *)malloc(sizeof(threadArguments));
+		// 			argE->start = queues[i]->start;
+		// 			argE->end = queues[i]->end;
+		// 			pthread_create(&pt[i], NULL, thread, argE);
+		// 			E = i;
+		// 			queues[i] = NULL;
+		// 		}
+		// 		else if (E != -1)
+		// 		{
+		// 			pthread_join(pt[E], NULL);
+		// 			E = -1;
+		// 		}
 
-	pthread_create(&(tid[1]), NULL, &thread, NULL);
-	pthread_create(&(tid[2]), NULL, &thread, NULL);
-	pthread_create(&(tid[3]), NULL, &thread, NULL);
-	pthread_create(&(tid[4]), NULL, &thread, NULL);
-	sleep(4);
-    pthread_join(tid[0], NULL); 
-    pthread_join(tid[1], NULL); 
-    pthread_join(tid[2], NULL); 
-    pthread_join(tid[3], NULL); 
-    pthread_mutex_destroy(&lock); 
-  
-    return 0; 
+		// 		if (S == -1 && queues[i]->start == 6)
+		// 		{
+		// 			threadArguments *argS = (threadArguments *)malloc(sizeof(threadArguments));
+		// 			argS->start = queues[i]->start;
+		// 			argS->end = queues[i]->end;
+		// 			pthread_create(&pt[i], NULL, thread, argS);
+		// 			S = i;
+		// 			queues[i] = NULL;
+		// 		}
+		// 		else if (S != -1)
+		// 		{
+		// 			pthread_join(pt[S], NULL);
+		// 			S = -1;
+		// 		}
+
+		// 		if (W == -1 && queues[i]->start == 9)
+		// 		{
+		// 			threadArguments *argW = (threadArguments *)malloc(sizeof(threadArguments));
+		// 			argW->start = queues[i]->start;
+		// 			argW->end = queues[i]->end;
+		// 			pthread_create(&pt[i], NULL, thread, argW);
+		// 			W = i;
+		// 			queues[i] = NULL;
+		// 		}
+		// 		else if (W != -1)
+		// 		{
+		// 			pthread_join(pt[W], NULL);
+		// 			W = -1;
+		// 		}
+		// 	} else if (queues[i] == NULL && i > 20) {
+		// 		if(N != -1) {
+		// 			pthread_join(pt[N], NULL);
+		// 			N = -1;
+		// 		}
+		// 		if(E != -1) {
+		// 			pthread_join(pt[E], NULL);
+		// 			E = -1;
+		// 		}
+		// 		if(S != -1) {
+		// 			pthread_join(pt[S], NULL);
+		// 			S = -1;
+		// 		}
+		// 		if(W != -1) {
+		// 			pthread_join(pt[W], NULL);
+		// 			W = -1;
+		// 		}
+		// 	}
+		// }
+	// }
+
+	// // pthread_create(&(tid[1]), NULL, &thread, NULL);
+	// // pthread_create(&(tid[2]), NULL, &thread, NULL);
+	// // pthread_create(&(tid[3]), NULL, &thread, NULL);
+	// // pthread_create(&(tid[4]), NULL, &thread, NULL);
+	// // sleep(4);
+	// // pthread_join(tid[0], NULL);
+	// // pthread_join(tid[1], NULL);
+	// // pthread_join(tid[2], NULL);
+	// // pthread_join(tid[3], NULL);
+	pthread_mutex_destroy(&lock);
+
+	return 0;
 	//end copied section
 }
