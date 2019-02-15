@@ -341,22 +341,30 @@ void *thread(void *arg)
 }
 int threadList[100];
 
-void printStat() {
-	for (int i = 1; i < 500; i++) {
-		if(ourVisitData[i] == NULL){
+void printStat()
+{
+	for (int i = 1; i < 500; i++)
+	{
+		if (ourVisitData[i] == NULL)
+		{
 			break;
-		} else {
+		}
+		else
+		{
 			int currID = ourVisitData[i]->charID;
-			char* type = ourVisitData[i]->typeChar;
+			char *type = ourVisitData[i]->typeChar;
 			double goldSpent = ourVisitData[i]->goldSpent;
 			int visitNum = ourVisitData[i]->visitNum;
 
 			printf("\t----	Statistic ----\t\n");
-			
-			if(type == "P") {
+
+			if (type == "P")
+			{
 				printf("Pirate Thread %d has total gold spent : %lf\t\t&\ttotal visits : %d\n", currID, goldSpent, visitNum);
 				//printf("Pirate Thread %d has total gold spent : %lf\t&\ttotal visits : \n", currID, goldSpent);
-			} else {
+			}
+			else
+			{
 				printf("Ninja Thread %d has total gold spent : %lf\t\t&\ttotal visits : %d\n", currID, goldSpent, visitNum);
 				//printf("Ninja Thread %d has total gold spent : %lf\t&\ttotal visits : \n", currID, goldSpent);
 			}
@@ -365,81 +373,163 @@ void printStat() {
 	}
 }
 
+// 0 means Null and 1 means not null
+int isNULL()
+{
+	int notNull = 0;
+	for (int i = 1; i < 100; i++)
+	{
+		if (threadList[i] != 0)
+		{
+			notNull = 1;
+			break;
+		}
+		else
+		{
+			notNull = 0;
+		}
+	}
+	return notNull;
+}
+
 void joinThread(pthread_t *pt)
 {
-	for (int i = 0; i < 100; i++)
+	for (int i = 1; i < 100; i++)
 	{
 		if (threadList[0] == 0)
 		{
 			joinThread(pt);
 		}
-		else
-		{	
-			pthread_join(pt[threadList[i]], NULL);
+		else if (isNULL() == 1)
+		{
+			if (threadList[i] != 0)
+			{
+				pthread_join(pt[threadList[i]], NULL);
+				printf("Thread %d is joined\n", threadList[i]);
+			}
+			else
+			{
+				break;
+			}
 		}
 	}
 }
 
-int createThread(int numNinja, int numPirate, int threadNum, int visitNum, pthread_t *pt)
+int createThread(int numNinja, int numPirate, int threadNum, int visitNum, int prevType, pthread_t *pt)
 {
 	threadArguments *arg = (threadArguments *)malloc(sizeof(threadArguments));
 	arg->charID = threadNum;
 	int type;
-	if(numNinja == 0 && numPirate == 0) {
+	if (numNinja <= 0 && numPirate <= 0)
+	{
 		return threadNum;
-	} else if (numNinja != 0 && numPirate != 0) {
-		type = rand() % 2;
-	} else if (numNinja == 0 && numPirate != 0) {
-		type = 0;
-	} else {
-		type = 1;
 	}
-	
+
+	if (prevType == -1)
+	{
+		if (numNinja > 0 && numPirate > 0)
+		{
+			type = rand() % 2;
+		}
+		else if (numNinja <= 0 && numPirate > 0)
+		{
+			type = 0;
+		}
+		else if (numNinja > 0 && numPirate <= 0)
+		{
+			type = 1;
+		}
+	}
+	else
+	{
+		type = prevType;
+	}
+
 	if (type == 0)
 	{
 		arg->typeChar = "P";
 		numPirate--;
+		printf("Pirate Thread created with Thread No : %d \n", threadNum);
 	}
 	else if (type == 1)
 	{
 		arg->typeChar = "N";
 		numNinja--;
+		printf("Ninja Thread created with Thread No : %d \n", threadNum);
 	}
 	arg->visitNum = visitNum;
 	pthread_create(&pt[threadNum], NULL, thread, arg);
+	
+	threadList[0] = 1;
 
-	for(int i = 0; i < 100; i++) {
-		if(threadList[i] == threadNum){
-		 	break;
-		} else if (threadList[i] == 0) {
+	for (int i = 1; i < 100; i++)
+	{
+		if (threadList[i] == threadNum)
+		{
+			break;
+		}
+		else if (threadList[i] == 0)
+		{
 			threadList[i] = threadNum;
 			break;
 		}
 	}
 	printf("Ninjas : %d \t&\t Pirates : %d \n", numNinja, numPirate);
 	int willRevisit = rand25();
-	 if (numNinja == 0 && numPirate == 0)
-	 {
-	 	return threadNum;
+
+	if (numNinja <= 0 && numPirate <= 0)
+	{
+		return threadNum;
 		//joinThread(pt);
-	 }
-	 else
-	 {
+	}
+	else
+	{
+		// 1 means not going to revisit, 0 means thread is going to revisit
 		if (willRevisit == 1)
 		{
-			visitNum = 1;
-			threadNum = threadNum + 1;
-			createThread(numNinja, numPirate, threadNum, visitNum, pt);
+			if (numNinja <= 0 && numPirate > 0)
+			{
+				pthread_join(pt[threadNum], NULL);
+				visitNum = 1;
+				threadNum = threadNum + 1;
+				return createThread(numNinja, numPirate, threadNum, visitNum, 0, pt);
+			}
+			else if (numPirate <= 0 && numNinja > 0)
+			{
+				pthread_join(pt[threadNum], NULL);
+				visitNum = 1;
+				threadNum = threadNum + 1;
+				return createThread(numNinja, numPirate, threadNum, visitNum, 1, pt);
+			}
+			else
+			{
+				visitNum = 1;
+				threadNum = threadNum + 1;
+				return createThread(numNinja, numPirate, threadNum, visitNum, -1, pt);
+			}
 		}
 		else
 		{
-			visitNum = visitNum + 1;
 			pthread_join(pt[threadNum], NULL);
-			createThread(numNinja, numPirate, threadNum, visitNum, pt);
+			if (type == 0)
+			{
+				visitNum = visitNum + 1;
+				//pthread_join(pt[threadNum], NULL);
+				numPirate = numPirate + 1;
+				printf("Pirate Thread %d is revisiting\n", threadNum);
+				return createThread(numNinja, numPirate, threadNum, visitNum, type, pt);
+			}
+			else
+			{
+				visitNum = visitNum + 1;
+				//pthread_join(pt[threadNum], NULL);
+				numNinja = numNinja + 1;
+				printf("Ninja Thread %d is revisiting\n", threadNum);
+				return createThread(numNinja, numPirate, threadNum, visitNum, type, pt);
+			}
 		}
 	}
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -472,9 +562,11 @@ int main(int argc, char *argv[])
 	pthread_t *pt = malloc(500 * sizeof(pthread_t));
 	int threadNum = 1;
 	int visitNum = 1;
-	int lastThread = createThread(numNinja, numPirate, threadNum, visitNum, pt);
-	sleep(4);
-	joinThread(pt);
+	int lastThread = createThread(numNinja, numPirate, threadNum, visitNum, -1, pt);
+	if (lastThread > 1)
+	{
+		joinThread(pt);
+	}
 	sleep(3);
 	printStat();
 
