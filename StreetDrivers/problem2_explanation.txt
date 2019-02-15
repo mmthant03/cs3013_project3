@@ -22,3 +22,201 @@ They will all enter the quadrants, then try to move forward but they will be una
 Deadlock can be avoided here by using locks
 If you allow every car to "map" where they are traveling as a critical section, and not allow any other car to enter a quadrant that is mapped, deadlock will be avoided as a whole
 
+========================================================================
+OUR SOLUTION
+
+Our solution meets the requirements fully we believe
+All 20 drivers are simulated as if they arrive and are in a queue for each side of the road
+There were assumptions made, as the instructions were unspecific, that are explained here
+
+How our code works
+1) We populate a full array of 20 pairs of integers (3, 6, 9, 12 refereincing clock faces as cardinal directions)
+2) We take the first of the array for each direction and create a thread from that
+3) We run those first four threads, allowing locks to handle who can go
+	- Acquire the lock
+	- For the critical section the thread marks the squares they are going on a whiteboard
+	- Release the lock
+4) When a thread exits, release all the squares it was holding then let the next car in the start direction run 
+	- If a car was from SOUTH, it will let the next SOUTH car run
+5) Repeat until all 20 cars are finished
+
+Assumptions we made
+1) All cars drive for 1 second. We figured it does not matter how long the car actually drives as the goal is just to allow other cars to concurrently drive, the amount of time is irrelevant provided it is not instantaneous
+
+========================================================================
+***TEST CASES***
+
+We will show some example "edge cases" to show how our program handles
+We tested by hard coding certain directions then un-hard coded for the real code we have
+(at the bottom is our full run with automatically generated directions as requested)
+
+
+ALL RIGHT TURNS
+Four cars can make right turns concurrently
+Thread 1 is trying to acquire the squares (6 to 3)
+THREAD 1 ACQUIRED SQUARES!!
+Thread 1 has started at 6
+Thread 2 is trying to acquire the squares (12 to 9)
+THREAD 2 ACQUIRED SQUARES!!
+Thread 2 has started at 12
+Thread 3 is trying to acquire the squares (3 to 12)
+THREAD 3 ACQUIRED SQUARES!!
+Thread 3 has started at 3
+Thread 4 is trying to acquire the squares (9 to 6)
+THREAD 4 ACQUIRED SQUARES!!
+Thread 4 has started at 9
+Thread 1 has finished at 3
+Thread 1 s2 releasing squares
+Thread 2 has finished at 9
+Thread 2 s2 releasing squares
+Thread 3 has finished at 12
+Thread 3 s2 releasing squares
+Thread 4 has finished at 6
+Thread 4 s2 releasing squares
+
+PARELLEL STRAIGHT LINES
+Thread 1 is trying to acquire the squares (6 to 12)
+THREAD 1 ACQUIRED SQUARES!!
+Thread 1 has started at 6
+Thread 2 is trying to acquire the squares (12 to 6)
+THREAD 2 ACQUIRED SQUARES!!
+Thread 2 has started at 12
+Thread 1 has finished at 12
+Thread 1 s2 releasing squares
+Thread 2 has finished at 6
+Thread 2 s2 releasing squares
+
+Two left turns is not supported concurrently, one has to wait for the other to go
+It is a tradeoff that we feel was very reasonable
+One thread waits because squares are taken
+Thread 1 is trying to acquire the squares (6 to 9)
+THREAD 1 ACQUIRED SQUARES!!
+Thread 1 has started at 6
+Thread 2 is trying to acquire the squares (12 to 3)
+Thread 2 is trying to acquire the squares (12 to 3)
+Thread 2 is trying to acquire the squares (12 to 3)
+Thread 2 is trying to acquire the squares (12 to 3)
+Thread 1 has finished at 9
+Thread 1 s2 releasing squares
+Thread 2 is trying to acquire the squares (12 to 3)
+THREAD 2 ACQUIRED SQUARES!!
+Thread 2 has started at 12
+Thread 2 has finished at 3
+Thread 2 s2 releasing squares
+
+CARS ARE QUEUED CORRECTLY
+Note that this is shortened output from our final code so this output is shortened to show the relevant data
+Car 3, 6 does not jump queue whatsoever they do not try acquiring squares before they are first of their turn
+Inserting into queue= 0 / start= 9 / end= 3 
+Inserting into queue= 3 / start= 9 / end= 6 
+Inserting into queue= 6 / start= 9 / end= 6 
+Queue populated with random start and end values !
+Thread 0 is trying to acquire the squares (9 to 3)
+THREAD 0 ACQUIRED SQUARES!!
+Thread 0 has started at 9
+Thread 0 has finished at 3
+Thread 0 s2 releasing squares
+Thread 3 is trying to acquire the squares (9 to 6)
+THREAD 3 ACQUIRED SQUARES!!
+Thread 3 has started at 9
+Thread 5 is trying to acquire the squares (3 to 6)
+Thread 3 has finished at 6
+Thread 6 is trying to acquire the squares (9 to 6)
+THREAD 6 ACQUIRED SQUARES!!
+Thread 6 has started at 9
+Thread 6 has finished at 6
+Thread 6 s2 releasing squares
+
+
+
+
+
+
+
+
+
+
+
+
+The rest of this output is a longer showing of how our code runs when fully running, and not using test cases; this is the true output for the finished program
+
+Note that we cut it off at 9 cars due to sheer redundancy however the process repeats for all 20 cars without deadlocking and can easily be extended further to any number
+We ran this code extensively without any singular deadlock or issue
+
+dchao@dchao-VirtualBox:~/cs3013_project3/StreetDrivers$ ./phase2 
+Inserting into queue= 0 / start= 12 / end= 3 
+Inserting into queue= 1 / start= 3 / end= 6 
+Inserting into queue= 2 / start= 6 / end= 9 
+Inserting into queue= 3 / start= 12 / end= 3 
+Inserting into queue= 4 / start= 3 / end= 6 
+Inserting into queue= 5 / start= 3 / end= 6 
+Inserting into queue= 6 / start= 12 / end= 9 
+Inserting into queue= 7 / start= 3 / end= 6 
+Inserting into queue= 8 / start= 3 / end= 12 
+Inserting into queue= 9 / start= 12 / end= 9 
+Inserting into queue= 10 / start= 3 / end= 9 
+Inserting into queue= 11 / start= 12 / end= 3 
+Inserting into queue= 12 / start= 3 / end= 12 
+Inserting into queue= 13 / start= 12 / end= 6 
+Inserting into queue= 14 / start= 9 / end= 6 
+Inserting into queue= 15 / start= 3 / end= 6 
+Inserting into queue= 16 / start= 9 / end= 3 
+Inserting into queue= 17 / start= 9 / end= 3 
+Inserting into queue= 18 / start= 6 / end= 9 
+Inserting into queue= 19 / start= 12 / end= 9 
+Queue populated with random start and end values !
+Creating lock
+Starting up our first four cars, one for each position
+Thread 2 is trying to acquire the squares (6 to 9)
+THREAD 2 ACQUIRED SQUARES!!
+Thread 1 is trying to acquire the squares (3 to 6)
+Thread 0 is trying to acquire the squares (12 to 3)
+Thread 2 has started at 6
+Thread 1 is trying to acquire the squares (3 to 6)
+Thread 0 is trying to acquire the squares (12 to 3)
+Thread 2 has finished at 9
+Thread 2 s2 releasing squares
+Thread 1 is trying to acquire the squares (3 to 6)
+THREAD 1 ACQUIRED SQUARES!!
+Thread 0 is trying to acquire the squares (12 to 3)
+Thread 1 has started at 3
+Thread 0 is trying to acquire the squares (12 to 3)
+Thread 1 has finished at 6
+Thread 1 s2 releasing squares
+Thread 0 is trying to acquire the squares (12 to 3)
+THREAD 0 ACQUIRED SQUARES!!
+Thread 0 has started at 12
+Thread 0 has finished at 3
+Thread 0 s2 releasing squares
+Thread 3 is trying to acquire the squares (12 to 3)
+THREAD 3 ACQUIRED SQUARES!!
+Thread 3 has started at 12
+Thread 3 has finished at 3
+Thread 3 s2 releasing squares
+Thread 4 is trying to acquire the squares (3 to 6)
+THREAD 4 ACQUIRED SQUARES!!
+Thread 4 has started at 3
+Thread 4 has finished at 6
+Thread 4 s2 releasing squares
+Thread 5 is trying to acquire the squares (3 to 6)
+THREAD 5 ACQUIRED SQUARES!!
+Thread 5 has started at 3
+Thread 5 has finished at 6
+Thread 5 s2 releasing squares
+Thread 6 is trying to acquire the squares (12 to 9)
+THREAD 6 ACQUIRED SQUARES!!
+Thread 6 has started at 12
+Thread 6 has finished at 9
+Thread 6 s2 releasing squares
+Thread 7 is trying to acquire the squares (3 to 6)
+THREAD 7 ACQUIRED SQUARES!!
+Thread 7 has started at 3
+Thread 7 has finished at 6
+Thread 7 s2 releasing squares
+Thread 8 is trying to acquire the squares (3 to 12)
+THREAD 8 ACQUIRED SQUARES!!
+Thread 8 has started at 3
+Thread 8 has finished at 12
+Thread 8 s2 releasing squares
+Thread 9 is trying to acquire the squares (12 to 9)
+THREAD 9 ACQUIRED SQUARES!!
