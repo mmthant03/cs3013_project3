@@ -281,21 +281,21 @@ void *thread(void *arg)
 	counter += 1;		 //just to keep track of threads, nothing more
 	threadNum = counter; //just in case some other thread updates counter
 	pthread_mutex_unlock(&lock);
-	if (threadNum == 2)
-	{
-		start = 12;
-		end = 9;
-	}
-	if (threadNum == 3)
-	{
-		start = 3;
-		end = 12;
-	}
-	if (threadNum == 4)
-	{
-		start = 9;
-		end = 6;
-	}
+	// if (threadNum == 2)
+	// {
+	// 	start = 12;
+	// 	end = 9;
+	// }
+	// if (threadNum == 3)
+	// {
+	// 	start = 3;
+	// 	end = 12;
+	// }
+	// if (threadNum == 4)
+	// {
+	// 	start = 9;
+	// 	end = 6;
+	// }
 
 	int locksAcquired = 0;
 	while (locksAcquired == 0) //spin until we can go
@@ -376,8 +376,22 @@ int main(int argc, char *argv[])
 	int W = -1;
 	printf("You are here3");
 	
+	// dont bother with this array for now
 
-	for(int i = 0; i < 20; i++) {
+
+	for(int i = 0; i < 21; i++) {
+		if (i == 20) {
+			sleep(2);
+			pthread_join(pt[N], NULL);
+			pthread_join(pt[E], NULL);
+			pthread_join(pt[S], NULL);
+			pthread_join(pt[W], NULL);
+			N = -1;
+			E = -1;
+			S = -1;
+			W = -1;
+			break;
+		}
 		if(queues[i] != NULL) {
 			if(N == -1 && queues[i]->start == 12) {
 				threadArguments *argN = (threadArguments *)malloc(sizeof(threadArguments));
@@ -385,13 +399,106 @@ int main(int argc, char *argv[])
 				argN->end = queues[i]->end;
 				pthread_create(&pt[i], NULL, thread, argN);
 				N = i;
-				queues[i] = NULL;
-			} else if (N != -1) {
-				sleep(1);
-				pthread_join(pt[i], NULL);
+				queues[i]->start = 0;
+			} else if (N != -1 && queues[i]->start == 12) {
+				sleep(2);
+				pthread_join(pt[N], NULL);
+				sleep(2);
+				threadArguments *argN = (threadArguments *)malloc(sizeof(threadArguments));
+				argN->start = queues[i]->start;
+				argN->end = queues[i]->end;
+				pthread_create(&pt[i], NULL, thread, argN);
+				N = i;
+				queues[i]->start = 0;
 			}
-		} 
+
+			if(E == -1 && queues[i]->start == 3) {
+				threadArguments *argE = (threadArguments *)malloc(sizeof(threadArguments));
+				argE->start = queues[i]->start;
+				argE->end = queues[i]->end;
+				pthread_create(&pt[i], NULL, thread, argE);
+				E = i;
+				queues[i]->start = 0;
+			} else if (E != -1 && queues[i]->start == 3) {
+				sleep(2);
+				pthread_join(pt[E], NULL);
+				sleep(2);
+				threadArguments *argE = (threadArguments *)malloc(sizeof(threadArguments));
+				argE->start = queues[i]->start;
+				argE->end = queues[i]->end;
+				pthread_create(&pt[i], NULL, thread, argE);
+				E = i;
+				queues[i]->start = 0;
+			}
+
+			if(S == -1 && queues[i]->start == 6) {
+				threadArguments *argS = (threadArguments *)malloc(sizeof(threadArguments));
+				argS->start = queues[i]->start;
+				argS->end = queues[i]->end;
+				pthread_create(&pt[i], NULL, thread, argS);
+				S = i;
+				queues[i]->start = 0;
+			} else if (S != -1 && queues[i]->start == 6) {
+				sleep(2);
+				pthread_join(pt[S], NULL);
+				sleep(2);
+				threadArguments *argS = (threadArguments *)malloc(sizeof(threadArguments));
+				argS->start = queues[i]->start;
+				argS->end = queues[i]->end;
+				pthread_create(&pt[i], NULL, thread, argS);
+				S = i;
+				queues[i]->start = 0;
+			}
+
+			if(W == -1 && queues[i]->start == 9) {
+				threadArguments *argW = (threadArguments *)malloc(sizeof(threadArguments));
+				argW->start = queues[i]->start;
+				argW->end = queues[i]->end;
+				pthread_create(&pt[i], NULL, thread, argW);
+				W = i;
+				queues[i]->start = 0;
+			} else if (W != -1 && queues[i]->start == 9) {
+				sleep(2);
+				pthread_join(pt[W], NULL);
+				threadArguments *argW = (threadArguments *)malloc(sizeof(threadArguments));
+				argW->start = queues[i]->start;
+				argW->end = queues[i]->end;
+				pthread_create(&pt[i], NULL, thread, argW);
+				W = i;
+				queues[i]->start = 0;
+			}
+		}
 	}
+
+	// for(int i = 0; i < 21; i++) {
+	// 	if (i == 20) {
+	// 		sleep(2);
+	// 		pthread_join(pt[E], NULL);
+	// 		break;
+	// 	}
+	// 	if(queues[i] != NULL) {
+
+	// 		if(E == -1 && queues[i]->start == 3) {
+	// 			threadArguments *argE = (threadArguments *)malloc(sizeof(threadArguments));
+	// 			argE->start = queues[i]->start;
+	// 			argE->end = queues[i]->end;
+	// 			pthread_create(&pt[i], NULL, thread, argE);
+	// 			E = i;
+	// 			queues[i]->start = 0;
+	// 		} else if (E != -1 && queues[i]->start == 3) {
+	// 			sleep(2);
+	// 			pthread_join(pt[E], NULL);
+	// 			threadArguments *argE = (threadArguments *)malloc(sizeof(threadArguments));
+	// 			argE->start = queues[i]->start;
+	// 			argE->end = queues[i]->end;
+	// 			pthread_create(&pt[i], NULL, thread, argE);
+	// 			E = i;
+	// 			queues[i]->start = 0;
+	// 		}
+	// 	}
+	// }
+
+	// previous code on array
 
 	// for (int j = 0; j < 20; j++)
 	// {
