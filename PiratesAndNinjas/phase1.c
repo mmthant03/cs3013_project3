@@ -67,7 +67,7 @@ double spendTime(int avgTime)
 	double drand2 = (rand() + 1.0) / (RAND_MAX + 1.0);
 	double input = avgTime + 0.00;
 	double z = boxMuller(drand1, drand2);
-	return input + z;
+	return fabs(input + z);
 }
 
 /*for either ninja or pirate, the structure goes as follows:
@@ -349,13 +349,16 @@ void printStat() {
 			int currID = ourVisitData[i]->charID;
 			char* type = ourVisitData[i]->typeChar;
 			double goldSpent = ourVisitData[i]->goldSpent;
+			int visitNum = ourVisitData[i]->visitNum;
 
 			printf("\t----	Statistic ----\t\n");
 			
 			if(type == "P") {
-				printf("Pirate Thread %d has total gold spent : %lf\n", currID, goldSpent);
+				printf("Pirate Thread %d has total gold spent : %lf\t\t&\ttotal visits : %d\n", currID, goldSpent, visitNum);
+				//printf("Pirate Thread %d has total gold spent : %lf\t&\ttotal visits : \n", currID, goldSpent);
 			} else {
-				printf("Ninja Thread %d has total gold spent : %lf\n", currID, goldSpent);
+				printf("Ninja Thread %d has total gold spent : %lf\t\t&\ttotal visits : %d\n", currID, goldSpent, visitNum);
+				//printf("Ninja Thread %d has total gold spent : %lf\t&\ttotal visits : \n", currID, goldSpent);
 			}
 			printf("\n");
 		}
@@ -377,8 +380,6 @@ void joinThread(pthread_t *pt)
 	}
 }
 
-
-
 int createThread(int numNinja, int numPirate, int threadNum, int visitNum, pthread_t *pt)
 {
 	threadArguments *arg = (threadArguments *)malloc(sizeof(threadArguments));
@@ -386,7 +387,6 @@ int createThread(int numNinja, int numPirate, int threadNum, int visitNum, pthre
 	int type;
 	if(numNinja == 0 && numPirate == 0) {
 		return threadNum;
-		//joinThread(pt);
 	} else if (numNinja != 0 && numPirate != 0) {
 		type = rand() % 2;
 	} else if (numNinja == 0 && numPirate != 0) {
@@ -407,9 +407,10 @@ int createThread(int numNinja, int numPirate, int threadNum, int visitNum, pthre
 	}
 	arg->visitNum = visitNum;
 	pthread_create(&pt[threadNum], NULL, thread, arg);
+
 	for(int i = 0; i < 100; i++) {
 		if(threadList[i] == threadNum){
-			break;
+		 	break;
 		} else if (threadList[i] == 0) {
 			threadList[i] = threadNum;
 			break;
@@ -442,7 +443,7 @@ int createThread(int numNinja, int numPirate, int threadNum, int visitNum, pthre
 
 int main(int argc, char *argv[])
 {
-	srand(time(0));
+	srand(time(NULL));
 	//check the arguments
 	// (WE WILL CHECK ARGUMENTS WHEN WE FINISH)
 	int numRooms = 3; //number of costuming teams (2-4)
@@ -472,9 +473,9 @@ int main(int argc, char *argv[])
 	int threadNum = 1;
 	int visitNum = 1;
 	int lastThread = createThread(numNinja, numPirate, threadNum, visitNum, pt);
-	sleep(5);
+	sleep(4);
 	joinThread(pt);
-	sleep(5);
+	sleep(3);
 	printStat();
 
 	/*
