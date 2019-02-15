@@ -42,6 +42,10 @@ int turnsRemainingRed;
 int waitingBlues;
 int waitingReds;
 int count = 0;
+int avgNTime = 0;
+int avgPTime = 0;
+int avgNArrival = 0;
+int avgPArrival = 0;
 sem_t threeBluesMax;
 sem_t threeRedsMax;
 visitData *ourVisitData[500];
@@ -137,7 +141,7 @@ void *thread(void *arg)
 		printf("NINJA THREAD %d ENTERS\n", charID);
 
 		//generate time to spend
-		double randNo = spendTime(2);
+		double randNo = spendTime(avgNTime);
 		int timeSpentN = (int)((randNo)*60.00);
 		//spend time and save the time spent
 		sleep(1);
@@ -166,8 +170,8 @@ void *thread(void *arg)
 			//if there is no red let blue go
 			if (waitingReds > 0)
 			{
-				turnsRemainingRed = 3; //set the next group of turns to 3
-				for (int i = 0; i < 3; i++)
+				turnsRemainingRed = count; //set the next group of turns to 3
+				for (int i = 0; i < count; i++)
 				{
 					if (waitingReds > 0)
 					{
@@ -179,8 +183,8 @@ void *thread(void *arg)
 			}
 			else
 			{
-				turnsRemainingBlue = 3; //set the next group of turns to 3
-				for (int i = 0; i < 3; i++)
+				turnsRemainingBlue = count; //set the next group of turns to 3
+				for (int i = 0; i < count; i++)
 				{
 					if (waitingBlues > 0)
 					{
@@ -193,26 +197,10 @@ void *thread(void *arg)
 			sem_post(&mutex_red);
 			//printf("red lock released\n");
 		}
-		sem_post(&mutex_blue);
 		//printf("blue lock released\n");
 
+		sem_post(&mutex_blue);
 		sem_post(&threeBluesMax);
-
-		//when the thread ends
-		//add this data into array to keep track of stat
-		//ourVisitData[charID] = vD;
-
-		// int willRevisit = rand25();
-		// if(willRevisit == 0) {
-		// 	count++;
-		// 	printf("Revisiting Ninja Thread %d\n", charID);
-		// 	thisArg.visitNum++;
-		// 	threadArguments* arg = (threadArguments*)malloc(sizeof(threadArguments));
-		// 	arg ->charID = thisArg.charID;
-		// 	arg ->typeChar = thisArg.typeChar;
-		// 	arg -> visitNum = thisArg.visitNum + 1;
-		// 	thread(arg);
-		// }
 	}
 
 	//if Pirate
@@ -260,7 +248,7 @@ void *thread(void *arg)
 		printf("PIRATES %d ENTERS\n", charID);
 
 		//generate time to spend
-		double randNo = spendTime(2);
+		double randNo = spendTime(avgPTime);
 		int timeSpentP = (int)((randNo)*60.00);
 		//spend time and save the time spent
 		sleep(1);
@@ -290,8 +278,8 @@ void *thread(void *arg)
 			//if there is no blues waiting, let red go
 			if (waitingReds > 0)
 			{
-				turnsRemainingBlue = 3; //set the next group of turns to 3
-				for (int i = 0; i < 3; i++)
+				turnsRemainingBlue = count; //set the next group of turns to 3
+				for (int i = 0; i < count; i++)
 				{
 					if (waitingBlues > 0)
 					{
@@ -303,8 +291,8 @@ void *thread(void *arg)
 			}
 			else
 			{
-				turnsRemainingRed = 3; //set the next group of turns to 3
-				for (int i = 0; i < 3; i++)
+				turnsRemainingRed = count; //set the next group of turns to 3
+				for (int i = 0; i < count; i++)
 				{
 					if (waitingReds > 0)
 					{
@@ -317,29 +305,14 @@ void *thread(void *arg)
 			sem_post(&mutex_blue);
 			//printf("blue lock released\n");
 		}
-		sem_post(&mutex_red);
+
 		//printf("red lock released\n");
-
+		sem_post(&mutex_red);
 		sem_post(&threeRedsMax);
-
-		//when the thread ends
-		//add this data into array to keep track of stat
-		//ourVisitData[charID] = vD;
-
-		// int willRevisit = rand25();
-		// if(willRevisit == 0) {
-		// 	count++;
-		// 	printf("Revisting Pirate Thread %d\n", charID);
-		// 	thisArg.visitNum++;
-		// 	threadArguments* arg = (threadArguments*)malloc(sizeof(threadArguments));
-		// 	arg ->charID = thisArg.charID;
-		// 	arg ->typeChar = thisArg.typeChar;
-		// 	arg -> visitNum = thisArg.visitNum + 1;
-		// 	thread(arg);
-		// }
+		
 	}
 }
-int threadList[100];
+int threadList[175];
 
 void printStat()
 {
@@ -394,13 +367,13 @@ int isNULL()
 
 void joinThread(pthread_t *pt)
 {
-	for (int i = 1; i < 25; i++)
+	for (int i = 1; i < 175; i++)
 	{
 		if (threadList[0] == 0)
 		{
 			joinThread(pt);
 		}
-		else if (i == 24)
+		else if (i == 174)
 		{
 			printf("Threads joined \n");
 			break;
@@ -544,9 +517,36 @@ int main(int argc, char *argv[])
 {
 	srand(time(NULL));
 	//check the arguments
-	// (WE WILL CHECK ARGUMENTS WHEN WE FINISH)
-	int numRooms = 3; //number of costuming teams (2-4)
 
+	// (WE WILL CHECK ARGUMENTS WHEN WE FINISH)
+	int numRooms = 3;  //number of costuming teams (2-4)
+	int numNinja = 6;  // arguments we will get from user
+	int numPirate = 6; // arguments we will get from user
+
+	if (argc == 7)
+	{
+		printf("Insufficient Arguments. Please provide exactly 7!\n\n");
+		exit(1);
+	}
+	//number of costuming teams
+	count = atoi(argv[1]);
+	//number of pirates
+	numPirate = atoi(argv[2]);
+	//number of ninjas
+	numNinja = atoi(argv[3]);
+	//avg costume time for pirates
+	avgPTime = atoi(argv[4]);
+	//avg costime time for ninjas
+	avgNTime = atoi(argv[5]);
+	//if average costuming time of Pirate is shorter than that of Ninja
+	if(avgPTime<avgNTime) {
+		printf("Pirates tend to take longer than Ninjas. Please provide greater average time for Pirates!\n\n");
+		exit(1);
+	}
+	//avg arrival time for pirates
+	avgPArrival = atoi(argv[6]);
+	//avg arrival time for ninjas
+	avgNArrival = atoi(argv[7]);
 	//initialize the semaphore
 	sem_init(&numRedsFree, 0, numRooms);
 	sem_init(&numBluesFree, 0, numRooms);
@@ -555,126 +555,25 @@ int main(int argc, char *argv[])
 	sem_init(&mutex_red, 0, 1);
 	sem_init(&wrt, 0, 1);
 	sem_init(&bluesTurn, 0, 0);
-	sem_init(&threeBluesMax, 0, 3); // arguments we will get from user
-	sem_init(&threeRedsMax, 0, 3);  // arguments we will get from user
+	sem_init(&threeBluesMax, 0, count); // arguments we will get from user
+	sem_init(&threeRedsMax, 0, count);  // arguments we will get from user
 	bluec = 0;
 	redc = 0;
-	turnsRemainingRed = 3;
-	turnsRemainingBlue = 3;
+	turnsRemainingRed = count;
+	turnsRemainingBlue = count;
 	waitingBlues = 0;
 	waitingReds = 0;
-	int numNinja = 6;  // arguments we will get from user
-	int numPirate = 6; // arguments we will get from user
-
-	//TODO @myo put thread creation into a loop please, with random times
 	//start up some threads
 	pthread_t *pt = malloc(500 * sizeof(pthread_t));
 	int threadNum = 1;
 	int visitNum = 1;
 	int lastThread = createThread(numNinja, numPirate, threadNum, visitNum, -1, pt);
-
-	sleep(9);
+	sleep(8);
+	printf("\n\nLoading Statistic ...\n\n");
+	sleep(3);
 	printStat();
 	sleep(5);
 	joinThread(pt);
-	//printStat();
-
-	/*
-	int totalthreads = numNinja + numPirate;
-	int i = 1;
-	while (i > 0) //totalthreads + 1)
-	{
-		int type;
-		if (numNinja == 0 && numPirate == 0)
-		{
-			break;
-		}
-		else if (numNinja != 0 && numPirate != 0)
-		{
-			type = rand() % 2;
-		}
-		else if (numNinja == 0)
-		{
-			type = 0;
-		}
-		else
-		{
-			type = 1;
-		}
-
-		if (type == 0)
-		{
-			numPirate--;
-		}
-		else
-		{
-			numNinja--;
-		}
-		int visitNum = 1;
-		char *visited = createThread(type, i, visitNum, pt);
-		if (visited == "N")
-		{
-			numNinja++;
-		}
-		else if (visited == "P")
-		{
-			numPirate++;
-		}
-		i++;
-		//i = i + visited;
-		//totalthreads = totalthreads + visited;
-	}
-	printf("The total number of threads are %d\n", i);
-	int j = 1;
-	while (j < i + 1)
-	{
-		pthread_join(pt[j], NULL);
-		j++;
-	}
-
-
-	/*
-	while(i<totalthreads) {
-		int randNP = rand()%2;
-		threadArguments* arg = (threadArguments*)malloc(sizeof(threadArguments));
-		arg ->charID = i;
-		if (randNP == 0 && numPirate != 0) {
-			arg ->typeChar = "P";
-			numPirate--;
-		} else if (randNP == 1 && numNinja != 0) {
-			arg ->typeChar = "N";
-			numNinja--;
-		}
-		arg -> visitNum = 1;
-		pthread_create(&pt[i], NULL, thread, arg);
-		i++;
-		count++;
-	}
-	int j = 0;
-	while(j<count) {
-		pthread_join(pt[j], NULL);
-		j++;
-	}
-
-	/*
-    pthread_t t1,t2, t3, t4, t5, t6, t7, t8, t9; 
-	//void* thread (int charID, char typeChar, int visitNum)
-	threadArguments* arg = (threadArguments*)malloc(sizeof(threadArguments));
-	arg ->charID = 1;
-	arg ->typeChar = "P";
-	arg -> visitNum = 1;
-    pthread_create(&t1,NULL,thread, arg); 
-	
-	threadArguments* arg2 = (threadArguments*)malloc(sizeof(threadArguments));
-	arg2 ->charID = 1;
-	arg2 ->typeChar = "N";
-	arg2 -> visitNum = 1;
-    pthread_create(&t2,NULL,thread, arg2); 
-	
-    sleep(4); 
-    pthread_join(t1,NULL); 
-    pthread_join(t2,NULL);
-	*/
 	sem_destroy(&numRedsFree);
 	sem_destroy(&redsTurn);
 	sem_destroy(&bluesTurn);
